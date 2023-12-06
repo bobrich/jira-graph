@@ -1,47 +1,57 @@
-import Image from 'next/image'
+// pages/page.tsx
+'use client';
+import { useState } from 'react';
 
-export default function Home({ issueData, error }: { issueData: any, error: string | null }) {
-  // Render your page with the issueData and error props
-  return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      {/* Displaying Issue Data */}
-      {error && <p className="text-red-500">{error}</p>}
-      {issueData && (
-        <div className="issue-data">
-          <h3>Issue Details:</h3>
-          <p>Title: {issueData.fields.summary}</p>
-          <p>Status: {issueData.fields.status.name}</p>
-          {/* Add more fields as needed */}
-        </div>
-      )}
-    </main>
-  )
-}
+export default function Page() {
+    const [issueKey, setIssueKey] = useState('');
+    const [issueData, setIssueData] = useState<any>(null); // Set the type of issueData to 'any'
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
 
-export async function getServerSideProps(context: any) {
-  // Extract issue key from query parameters or context
-  let issueKey = context.query.issueKey; // Adjust based on your URL structure
+    const fetchIssueData = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await fetch(`/api/issue?issueKey=${issueKey}`);
+            if (!response.ok) {
+                throw new Error('Issue fetching failed');
+            }
+            const data = await response.json();
+            setIssueData(data);
+        } catch (err: any) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-  let issueData = null;
-  let error = null;
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        fetchIssueData();
+    };
 
-  try {
-    // Perform your API call here
-    const response = await fetch(`https://bobrich.atlassian.net/rest/api/3/issue/${issueKey}`, {
-      method: 'GET',
-      headers: {
-        'Authorization': 'Basic ' + btoa(`${process.env.JIRA_EMAIL}:${process.env.JIRA_API_TOKEN}`),
-        'Accept': 'application/json'
-      }
-    });
-    if (!response.ok) {
-      throw new Error('Issue not found');
-    }
-    issueData = await response.json();
-  } catch (err: any) {
-    error = err.message;
-  }
+    return (
+        <main>
+            <form onSubmit={handleSubmit}>
+                <input
+                    type="text"
+                    value={issueKey}
+                    onChange={(e) => setIssueKey(e.target.value)}
+                    placeholder="Enter Jira Issue Key"
+                />
+                <button type="submit">Lookup Issue</button>
+            </form>
 
-  // Pass data to the page via props
-  return { props: { issueData, error } };
+            {loading && <p>Loading...</p>}
+            {error && <p>Error: {error}</p>}
+            {issueData && (
+                <div>
+                    <h3>Issue Details:</h3>
+                    <p>Title: {issueData?.fields?.summary}</p> {/* Add optional chaining to handle null values */}
+                    <p>Status: {issueData?.fields?.status?.name}</p> {/* Add optional chaining to handle null values */}
+                    {/* Add more fields as needed */}
+                </div>
+            )}
+        </main>
+    );
 }
