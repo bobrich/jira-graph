@@ -3,7 +3,7 @@ export default async function handler(req, res) {
     const { issueKey } = req.query;
   
     try {
-      const response = await fetch(`https://your-jira-instance.atlassian.net/rest/api/3/issue/${issueKey}`, {
+      const response = await fetch(`https://bobrich.net/rest/api/3/issue/${issueKey}`, {
         method: 'GET',
         headers: {
           'Authorization': 'Basic ' + btoa(`${process.env.JIRA_EMAIL}:${process.env.JIRA_API_TOKEN}`),
