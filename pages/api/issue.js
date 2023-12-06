@@ -3,8 +3,7 @@ export default async function handler(req, res) {
   const { issueKey } = req.query;
 
   try {
-    url = `https://bobrich.atlassian.net/rest/api/3/issue/${issueKey}`;
-    console.error('Requesting URL:', url);
+    console.error(`https://bobrich.atlassian.net/rest/api/3/issue/${issueKey}`);
     
     const response = await fetch(`https://bobrich.atlassian.net/rest/api/3/issue/${issueKey}`, {
       method: 'GET',
