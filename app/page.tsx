@@ -1,56 +1,10 @@
-'use client';
-
 import Image from 'next/image'
-import { useState } from 'react'
 
-export default function Home() {
-  const [issueKey, setIssueKey] = useState('');
-  const [issueData, setIssueData] = useState<{ fields: { summary: string, status: { name: string } } } | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const handleIssueLookup = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await fetch(`https://bobrich.atlassian.net/rest/api/3/issue/${issueKey}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': 'Basic ' + btoa(`${process.env.NEXT_PUBLIC_JIRA_EMAIL}:${process.env.NEXT_PUBLIC_JIRA_API_TOKEN}`),
-          'Accept': 'application/json'
-        }
-      });
-      if (!response.ok) {
-        throw new Error('Issue not found');
-      }
-      const data = await response.json();
-      setIssueData(data as { fields: { summary: string, status: { name: string } } });
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+export default function Home({ issueData, error }: { issueData: any, error: string | null }) {
+  // Render your page with the issueData and error props
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      {/* Issue Lookup Form */}
-      <form onSubmit={handleIssueLookup} className="mb-4">
-        <input
-          type="text"
-          value={issueKey}
-          onChange={(e) => setIssueKey(e.target.value)}
-          placeholder="Enter Jira Issue Key"
-          className="border p-2 mr-2"
-        />
-        <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-          Lookup Issue
-        </button>
-      </form>
-
       {/* Displaying Issue Data */}
-      {loading && <p>Loading...</p>}
       {error && <p className="text-red-500">{error}</p>}
       {issueData && (
         <div className="issue-data">
@@ -61,5 +15,33 @@ export default function Home() {
         </div>
       )}
     </main>
-  );
+  )
+}
+
+export async function getServerSideProps(context: any) {
+  // Extract issue key from query parameters or context
+  let issueKey = context.query.issueKey; // Adjust based on your URL structure
+
+  let issueData = null;
+  let error = null;
+
+  try {
+    // Perform your API call here
+    const response = await fetch(`https://bobrich.atlassian.net/rest/api/3/issue/${issueKey}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': 'Basic ' + btoa(`${process.env.JIRA_EMAIL}:${process.env.JIRA_API_TOKEN}`),
+        'Accept': 'application/json'
+      }
+    });
+    if (!response.ok) {
+      throw new Error('Issue not found');
+    }
+    issueData = await response.json();
+  } catch (err: any) {
+    error = err.message;
+  }
+
+  // Pass data to the page via props
+  return { props: { issueData, error } };
 }
