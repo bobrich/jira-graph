@@ -1,3 +1,5 @@
+'use client';
+
 import Image from 'next/image'
 import { useState } from 'react'
 
@@ -15,7 +17,7 @@ export default function Home() {
       const response = await fetch(`https://bobrich.atlassian.net/rest/api/3/issue/${issueKey}`, {
         method: 'GET',
         headers: {
-          'Authorization': 'Basic ' + btoa('bobrich@gmail.com:ATATT3xFfGF0mk7Mkb0uJItDwlaDFPthF0xNsrnyDDtFGXq7w40HOn4qup5LHli_pW3yN8cD9Hi9YwsPez9DteS1qNVRHwpLa5nSh-FOXam9rA8l9ZDXhndmmwIW5Y7vwZyo3viE0Ne_sKjWCyi9i82aMBD0oqjXHbOptNXBCIvy88I_JmAYcVo=A99C0989'),
+          'Authorization': 'Basic ' + btoa(`${process.env.NEXT_PUBLIC_JIRA_EMAIL}:${process.env.NEXT_PUBLIC_JIRA_API_TOKEN}`),
           'Accept': 'application/json'
         }
       });
